@@ -106,4 +106,4 @@ if r_dist < 0.35:
 ## 7. 결과 및 시연
 
 * **시연 영상**: [YouTube 바로가기](링크를_입력하세요)
-* **GitHub**: [autonomous-forklift-ros2 저장소](https://github.com/YOUR_USERNAME/autonomous-forklift)
+* **결과**: 
