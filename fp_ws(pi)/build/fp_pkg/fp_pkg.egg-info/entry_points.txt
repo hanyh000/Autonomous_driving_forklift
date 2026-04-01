@@ -1,0 +1,4 @@
+[console_scripts]
+carry_node = fp_pkg.carry_node:main
+sensor_node = fp_pkg.sensor_node:main
+

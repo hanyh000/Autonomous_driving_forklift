@@ -1,0 +1,8 @@
+[0.000000] (-) TimerEvent: {}
+[0.001235] (fp_pkg) JobQueued: {'identifier': 'fp_pkg', 'dependencies': OrderedDict()}
+[0.001461] (fp_pkg) JobStarted: {'identifier': 'fp_pkg'}
+[0.097998] (-) TimerEvent: {}
+[0.198660] (-) TimerEvent: {}
+[0.299302] (-) TimerEvent: {}
+[0.369291] (fp_pkg) JobEnded: {'identifier': 'fp_pkg', 'rc': 0}
+[0.372091] (-) EventReactorShutdown: {}

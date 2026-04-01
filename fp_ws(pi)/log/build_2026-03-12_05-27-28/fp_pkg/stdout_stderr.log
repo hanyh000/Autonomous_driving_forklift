@@ -1,0 +1,16 @@
+running develop
+running egg_info
+writing fp_pkg.egg-info/PKG-INFO
+writing dependency_links to fp_pkg.egg-info/dependency_links.txt
+writing entry points to fp_pkg.egg-info/entry_points.txt
+writing requirements to fp_pkg.egg-info/requires.txt
+writing top-level names to fp_pkg.egg-info/top_level.txt
+reading manifest file 'fp_pkg.egg-info/SOURCES.txt'
+writing manifest file 'fp_pkg.egg-info/SOURCES.txt'
+running build_ext
+Creating /home/pi/fp_ws/install/fp_pkg/lib/python3.10/site-packages/fp-pkg.egg-link (link to .)
+Installing carry_node script to /home/pi/fp_ws/install/fp_pkg/lib/fp_pkg
+Installing sensor_node script to /home/pi/fp_ws/install/fp_pkg/lib/fp_pkg
+
+Installed /home/pi/fp_ws/build/fp_pkg
+running symlink_data

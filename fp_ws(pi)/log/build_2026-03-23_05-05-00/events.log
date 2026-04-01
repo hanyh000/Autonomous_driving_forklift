@@ -1,0 +1,84 @@
+[0.000000] (-) TimerEvent: {}
+[0.001767] (fp_pkg) JobQueued: {'identifier': 'fp_pkg', 'dependencies': OrderedDict()}
+[0.002324] (fp_pkg) JobStarted: {'identifier': 'fp_pkg'}
+[0.098646] (-) TimerEvent: {}
+[0.199432] (-) TimerEvent: {}
+[0.300119] (-) TimerEvent: {}
+[0.400861] (-) TimerEvent: {}
+[0.501597] (-) TimerEvent: {}
+[0.602298] (-) TimerEvent: {}
+[0.703034] (-) TimerEvent: {}
+[0.803686] (-) TimerEvent: {}
+[0.904336] (-) TimerEvent: {}
+[1.005033] (-) TimerEvent: {}
+[1.105727] (-) TimerEvent: {}
+[1.206535] (-) TimerEvent: {}
+[1.307409] (-) TimerEvent: {}
+[1.408491] (-) TimerEvent: {}
+[1.509964] (-) TimerEvent: {}
+[1.612082] (-) TimerEvent: {}
+[1.712879] (-) TimerEvent: {}
+[1.813548] (-) TimerEvent: {}
+[1.914266] (-) TimerEvent: {}
+[2.015237] (-) TimerEvent: {}
+[2.116105] (-) TimerEvent: {}
+[2.216876] (-) TimerEvent: {}
+[2.317721] (-) TimerEvent: {}
+[2.418445] (-) TimerEvent: {}
+[2.519140] (-) TimerEvent: {}
+[2.619868] (-) TimerEvent: {}
+[2.720595] (-) TimerEvent: {}
+[2.821364] (-) TimerEvent: {}
+[2.923279] (-) TimerEvent: {}
+[3.023984] (-) TimerEvent: {}
+[3.124823] (-) TimerEvent: {}
+[3.225648] (-) TimerEvent: {}
+[3.330089] (-) TimerEvent: {}
+[3.431094] (-) TimerEvent: {}
+[3.531953] (-) TimerEvent: {}
+[3.632764] (-) TimerEvent: {}
+[3.733535] (-) TimerEvent: {}
+[3.834349] (-) TimerEvent: {}
+[3.904322] (fp_pkg) Command: {'cmd': ['/usr/bin/python3', '-W', 'ignore:setup.py install is deprecated', '-W', 'ignore:easy_install command is deprecated', 'setup.py', 'egg_info', '--egg-base', '../../build/fp_pkg', 'build', '--build-base', '/home/pi/fp_ws/build/fp_pkg/build', 'install', '--record', '/home/pi/fp_ws/build/fp_pkg/install.log', '--single-version-externally-managed', 'install_data'], 'cwd': '/home/pi/fp_ws/src/fp_pkg', 'env': {'LESSOPEN': '| /usr/bin/lesspipe %s', 'USER': 'pi', 'SSH_CLIENT': '192.168.0.13 59296 22', 'XDG_SESSION_TYPE': 'tty', 'GIT_ASKPASS': '/home/pi/.vscode-server/cli/servers/Stable-ce099c1ed25d9eb3076c11e4a280f3eb52b4fbeb/server/extensions/git/dist/askpass.sh', 'SHLVL': '1', 'LD_LIBRARY_PATH': '/home/pi/turtlebot3_ws/install/coin_d4_driver/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/aarch64-linux-gnu:/opt/ros/humble/lib', 'BROWSER': '/home/pi/.vscode-server/cli/servers/Stable-ce099c1ed25d9eb3076c11e4a280f3eb52b4fbeb/server/bin/helpers/browser.sh', 'MOTD_SHOWN': 'pam', 'HOME': '/home/pi', 'OLDPWD': '/home/pi', 'TERM_PROGRAM_VERSION': '1.111.0', 'VSCODE_IPC_HOOK_CLI': '/run/user/1000/vscode-ipc-bd4ee9fb-ea0d-4f70-b258-ad3ae54c4dee.sock', 'ROS_PYTHON_VERSION': '3', 'VSCODE_GIT_ASKPASS_MAIN': '/home/pi/.vscode-server/cli/servers/Stable-ce099c1ed25d9eb3076c11e4a280f3eb52b4fbeb/server/extensions/git/dist/askpass-main.js', 'VSCODE_GIT_ASKPASS_NODE': '/home/pi/.vscode-server/cli/servers/Stable-ce099c1ed25d9eb3076c11e4a280f3eb52b4fbeb/server/node', 'VSCODE_PYTHON_AUTOACTIVATE_GUARD': '1', 'DBUS_SESSION_BUS_ADDRESS': 'unix:path=/run/user/1000/bus', 'COLORTERM': 'truecolor', 'COLCON_PREFIX_PATH': '/home/pi/turtlebot3_ws/install', 'ROS_DISTRO': 'humble', 'LOGNAME': 'pi', '_': '/usr/bin/colcon', 'ROS_VERSION': '2', 'XDG_SESSION_CLASS': 'user', 'TERM': 'xterm-256color', 'XDG_SESSION_ID': '3', 'ROS_LOCALHOST_ONLY': '0', 'PATH': '/home/pi/.vscode-server/cli/servers/Stable-ce099c1ed25d9eb3076c11e4a280f3eb52b4fbeb/server/bin/remote-cli:/home/pi/.local/bin:/opt/ros/humble/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin', 'XDG_RUNTIME_DIR': '/run/user/1000', 'LANG': 'en_US.UTF-8', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:', 'VSCODE_GIT_IPC_HANDLE': '/run/user/1000/vscode-git-a1691a7aa8.sock', 'TERM_PROGRAM': 'vscode', 'ROS_DOMAIN_ID': '17', 'AMENT_PREFIX_PATH': '/home/pi/turtlebot3_ws/install/turtlebot3:/home/pi/turtlebot3_ws/install/turtlebot3_teleop:/home/pi/turtlebot3_ws/install/turtlebot3_bringup:/home/pi/turtlebot3_ws/install/turtlebot3_node:/home/pi/turtlebot3_ws/install/turtlebot3_example:/home/pi/turtlebot3_ws/install/turtlebot3_description:/home/pi/turtlebot3_ws/install/ld08_driver:/home/pi/turtlebot3_ws/install/coin_d4_driver:/opt/ros/humble', 'SHELL': '/bin/bash', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'VSCODE_GIT_ASKPASS_EXTRA_ARGS': '', 'PWD': '/home/pi/fp_ws/build/fp_pkg', 'TURTLEBOT3_MODEL': 'waffle_pi', 'LC_ALL': 'en_US.UTF-8', 'SSH_CONNECTION': '192.168.0.13 59296 192.168.0.26 22', 'XDG_DATA_DIRS': '/usr/local/share:/usr/share:/var/lib/snapd/desktop', 'LDS_MODEL': 'LDS-02', 'PYTHONPATH': '/home/pi/fp_ws/build/fp_pkg/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/pi/fp_ws/install/fp_pkg/lib/python3.10/site-packages:/home/pi/turtlebot3_ws/build/turtlebot3_teleop:/home/pi/turtlebot3_ws/install/turtlebot3_teleop/lib/python3.10/site-packages:/home/pi/turtlebot3_ws/build/turtlebot3_example:/home/pi/turtlebot3_ws/install/turtlebot3_example/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages', 'COLCON': '1', 'CMAKE_PREFIX_PATH': '/home/pi/turtlebot3_ws/install/turtlebot3:/home/pi/turtlebot3_ws/install/turtlebot3_bringup:/home/pi/turtlebot3_ws/install/turtlebot3_node:/home/pi/turtlebot3_ws/install/turtlebot3_description:/home/pi/turtlebot3_ws/install/ld08_driver:/home/pi/turtlebot3_ws/install/coin_d4_driver'}, 'shell': False}
+[3.934525] (-) TimerEvent: {}
+[4.035924] (-) TimerEvent: {}
+[4.136639] (-) TimerEvent: {}
+[4.237444] (-) TimerEvent: {}
+[4.338150] (-) TimerEvent: {}
+[4.438897] (-) TimerEvent: {}
+[4.539548] (-) TimerEvent: {}
+[4.640364] (-) TimerEvent: {}
+[4.741005] (-) TimerEvent: {}
+[4.841626] (-) TimerEvent: {}
+[4.942307] (-) TimerEvent: {}
+[5.042994] (-) TimerEvent: {}
+[5.133283] (fp_pkg) StdoutLine: {'line': b'running egg_info\n'}
+[5.136746] (fp_pkg) StdoutLine: {'line': b'writing ../../build/fp_pkg/fp_pkg.egg-info/PKG-INFO\n'}
+[5.138188] (fp_pkg) StdoutLine: {'line': b'writing dependency_links to ../../build/fp_pkg/fp_pkg.egg-info/dependency_links.txt\n'}
+[5.139312] (fp_pkg) StdoutLine: {'line': b'writing entry points to ../../build/fp_pkg/fp_pkg.egg-info/entry_points.txt\n'}
+[5.140124] (fp_pkg) StdoutLine: {'line': b'writing requirements to ../../build/fp_pkg/fp_pkg.egg-info/requires.txt\n'}
+[5.140764] (fp_pkg) StdoutLine: {'line': b'writing top-level names to ../../build/fp_pkg/fp_pkg.egg-info/top_level.txt\n'}
+[5.143145] (-) TimerEvent: {}
+[5.148801] (fp_pkg) StdoutLine: {'line': b"reading manifest file '../../build/fp_pkg/fp_pkg.egg-info/SOURCES.txt'\n"}
+[5.192503] (fp_pkg) StdoutLine: {'line': b"writing manifest file '../../build/fp_pkg/fp_pkg.egg-info/SOURCES.txt'\n"}
+[5.193955] (fp_pkg) StdoutLine: {'line': b'running build\n'}
+[5.194697] (fp_pkg) StdoutLine: {'line': b'running build_py\n'}
+[5.195727] (fp_pkg) StdoutLine: {'line': b'copying fp_pkg/carry_node.py -> /home/pi/fp_ws/build/fp_pkg/build/lib/fp_pkg\n'}
+[5.197223] (fp_pkg) StdoutLine: {'line': b'running install\n'}
+[5.198659] (fp_pkg) StdoutLine: {'line': b'running install_lib\n'}
+[5.208265] (fp_pkg) StdoutLine: {'line': b'copying /home/pi/fp_ws/build/fp_pkg/build/lib/fp_pkg/carry_node.py -> /home/pi/fp_ws/install/fp_pkg/lib/python3.10/site-packages/fp_pkg\n'}
+[5.211501] (fp_pkg) StdoutLine: {'line': b'byte-compiling /home/pi/fp_ws/install/fp_pkg/lib/python3.10/site-packages/fp_pkg/carry_node.py to carry_node.cpython-310.pyc\n'}
+[5.223711] (fp_pkg) StdoutLine: {'line': b'running install_data\n'}
+[5.224390] (fp_pkg) StdoutLine: {'line': b'running install_egg_info\n'}
+[5.231515] (fp_pkg) StdoutLine: {'line': b"removing '/home/pi/fp_ws/install/fp_pkg/lib/python3.10/site-packages/fp_pkg-0.0.0-py3.10.egg-info' (and everything under it)\n"}
+[5.233229] (fp_pkg) StdoutLine: {'line': b'Copying ../../build/fp_pkg/fp_pkg.egg-info to /home/pi/fp_ws/install/fp_pkg/lib/python3.10/site-packages/fp_pkg-0.0.0-py3.10.egg-info\n'}
+[5.243073] (fp_pkg) StdoutLine: {'line': b'running install_scripts\n'}
+[5.243831] (-) TimerEvent: {}
+[5.322553] (fp_pkg) StdoutLine: {'line': b'Installing carry_node script to /home/pi/fp_ws/install/fp_pkg/lib/fp_pkg\n'}
+[5.323524] (fp_pkg) StdoutLine: {'line': b'Installing sensor_node script to /home/pi/fp_ws/install/fp_pkg/lib/fp_pkg\n'}
+[5.325284] (fp_pkg) StdoutLine: {'line': b"writing list of installed files to '/home/pi/fp_ws/build/fp_pkg/install.log'\n"}
+[5.344113] (-) TimerEvent: {}
+[5.444067] (fp_pkg) CommandEnded: {'returncode': 0}
+[5.445485] (-) TimerEvent: {}
+[5.534206] (fp_pkg) JobEnded: {'identifier': 'fp_pkg', 'rc': 0}
+[5.537853] (-) EventReactorShutdown: {}

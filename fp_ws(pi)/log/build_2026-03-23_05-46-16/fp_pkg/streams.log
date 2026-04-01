@@ -1,0 +1,25 @@
+[5.113s] Invoking command in '/home/pi/fp_ws/src/fp_pkg': PYTHONPATH=/home/pi/fp_ws/build/fp_pkg/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/pi/fp_ws/install/fp_pkg/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/fp_pkg build --build-base /home/pi/fp_ws/build/fp_pkg/build install --record /home/pi/fp_ws/build/fp_pkg/install.log --single-version-externally-managed install_data
+[7.394s] running egg_info
+[7.397s] writing ../../build/fp_pkg/fp_pkg.egg-info/PKG-INFO
+[7.399s] writing dependency_links to ../../build/fp_pkg/fp_pkg.egg-info/dependency_links.txt
+[7.401s] writing entry points to ../../build/fp_pkg/fp_pkg.egg-info/entry_points.txt
+[7.404s] writing requirements to ../../build/fp_pkg/fp_pkg.egg-info/requires.txt
+[7.405s] writing top-level names to ../../build/fp_pkg/fp_pkg.egg-info/top_level.txt
+[7.419s] reading manifest file '../../build/fp_pkg/fp_pkg.egg-info/SOURCES.txt'
+[7.425s] writing manifest file '../../build/fp_pkg/fp_pkg.egg-info/SOURCES.txt'
+[7.428s] running build
+[7.430s] running build_py
+[7.434s] copying fp_pkg/carry_node.py -> /home/pi/fp_ws/build/fp_pkg/build/lib/fp_pkg
+[7.436s] running install
+[7.438s] running install_lib
+[7.469s] copying /home/pi/fp_ws/build/fp_pkg/build/lib/fp_pkg/carry_node.py -> /home/pi/fp_ws/install/fp_pkg/lib/python3.10/site-packages/fp_pkg
+[7.484s] byte-compiling /home/pi/fp_ws/install/fp_pkg/lib/python3.10/site-packages/fp_pkg/carry_node.py to carry_node.cpython-310.pyc
+[7.524s] running install_data
+[7.538s] running install_egg_info
+[7.551s] removing '/home/pi/fp_ws/install/fp_pkg/lib/python3.10/site-packages/fp_pkg-0.0.0-py3.10.egg-info' (and everything under it)
+[7.555s] Copying ../../build/fp_pkg/fp_pkg.egg-info to /home/pi/fp_ws/install/fp_pkg/lib/python3.10/site-packages/fp_pkg-0.0.0-py3.10.egg-info
+[7.567s] running install_scripts
+[7.915s] Installing carry_node script to /home/pi/fp_ws/install/fp_pkg/lib/fp_pkg
+[7.917s] Installing sensor_node script to /home/pi/fp_ws/install/fp_pkg/lib/fp_pkg
+[7.920s] writing list of installed files to '/home/pi/fp_ws/build/fp_pkg/install.log'
+[8.142s] Invoked command in '/home/pi/fp_ws/src/fp_pkg' returned '0': PYTHONPATH=/home/pi/fp_ws/build/fp_pkg/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/pi/fp_ws/install/fp_pkg/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/fp_pkg build --build-base /home/pi/fp_ws/build/fp_pkg/build install --record /home/pi/fp_ws/build/fp_pkg/install.log --single-version-externally-managed install_data

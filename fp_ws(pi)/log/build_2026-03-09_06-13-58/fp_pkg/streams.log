@@ -1,0 +1,20 @@
+[8.762s] Invoking command in '/home/pi/fp_ws/build/fp_pkg': PYTHONPATH=/home/pi/fp_ws/build/fp_pkg/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/pi/fp_ws/install/fp_pkg/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /home/pi/fp_ws/build/fp_pkg/build --no-deps symlink_data --force
+[10.112s] running develop
+[11.951s] running egg_info
+[11.954s] writing fp_pkg.egg-info/PKG-INFO
+[11.956s] writing dependency_links to fp_pkg.egg-info/dependency_links.txt
+[11.957s] writing entry points to fp_pkg.egg-info/entry_points.txt
+[11.958s] writing requirements to fp_pkg.egg-info/requires.txt
+[11.960s] writing top-level names to fp_pkg.egg-info/top_level.txt
+[11.968s] reading manifest file 'fp_pkg.egg-info/SOURCES.txt'
+[11.971s] writing manifest file 'fp_pkg.egg-info/SOURCES.txt'
+[11.977s] running build_ext
+[11.978s] Creating /home/pi/fp_ws/install/fp_pkg/lib/python3.10/site-packages/fp-pkg.egg-link (link to .)
+[11.982s] Installing carry_node script to /home/pi/fp_ws/install/fp_pkg/lib/fp_pkg
+[11.983s] Installing sensor_node script to /home/pi/fp_ws/install/fp_pkg/lib/fp_pkg
+[11.984s] 
+[11.984s] Installed /home/pi/fp_ws/build/fp_pkg
+[11.985s] running symlink_data
+[11.985s] symbolically linking /home/pi/fp_ws/build/fp_pkg/resource/fp_pkg -> /home/pi/fp_ws/install/fp_pkg/share/ament_index/resource_index/packages
+[11.985s] symbolically linking /home/pi/fp_ws/build/fp_pkg/package.xml -> /home/pi/fp_ws/install/fp_pkg/share/fp_pkg
+[12.119s] Invoked command in '/home/pi/fp_ws/build/fp_pkg' returned '0': PYTHONPATH=/home/pi/fp_ws/build/fp_pkg/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/pi/fp_ws/install/fp_pkg/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py develop --editable --build-directory /home/pi/fp_ws/build/fp_pkg/build --no-deps symlink_data --force
