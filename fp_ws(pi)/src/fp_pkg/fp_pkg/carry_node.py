@@ -113,14 +113,16 @@ class IntegratedForkliftNode(Node):
         self._detector = cv2.aruco.ArucoDetector(_dict, _params)
 
         # ── 내부 상태 변수 ──
-        self._is_running          = False
-        self._marker_found        = False
-        self._error_px            = 0      # 좌우 픽셀 오차 (크랩 워킹용)
-        self._horizontal_error    = 0.0    # 수평 기울기 오차 (yaw 정렬용)
-        self._marker_top_y        = 0      # 수직 거리 정렬용
-        self._last_calc_time      = 0.0    # 쓰로틀용 — 처리 시도 기준
-        self._last_found_time     = 0.0    # 신선도용 — 감지 성공 기준 [수정 1]
-        self._current_target_id   = None
+        self._is_running              = False
+        self._marker_found            = False   # target ID 마커 감지 여부
+        self._any_marker_found        = False   # ID 무관 마커 감지 여부 (yaw 정렬용)
+        self._error_px                = 0       # 좌우 픽셀 오차 (크랩 워킹용)
+        self._horizontal_error        = 0.0     # 수평 기울기 오차 (yaw 정렬용)
+        self._marker_top_y            = 0       # 수직 거리 정렬용
+        self._last_calc_time          = 0.0     # 쓰로틀용 — 처리 시도 기준
+        self._last_found_time         = 0.0     # target 마커 신선도 기준
+        self._any_marker_found_time   = 0.0     # 임의 마커 신선도 기준 (yaw 정렬용)
+        self._current_target_id       = None
 
         # ── QoS 설정 ──
         qos_img = QoSProfile(
@@ -166,29 +168,48 @@ class IntegratedForkliftNode(Node):
             corners, ids, _ = self._detector.detectMarkers(img)
 
             if ids is not None:
-                # 같은 ID 마커가 여러 개일 때 화면 중앙에 가장 가까운 것 선택
-                candidates = []
-                for i, m_id in enumerate(ids.flatten()):
+                flat_ids = ids.flatten()
+
+                # ── ① 수평 정렬용: 화면 중앙에 가장 가까운 마커 (ID 무관) ──
+                any_candidates = []
+                for i, m_id in enumerate(flat_ids):
+                    marker_cx = int(np.mean(corners[i][0][:, 0]))
+                    any_candidates.append((abs(marker_cx - center_x), i, marker_cx))
+
+                if any_candidates:
+                    any_candidates.sort(key=lambda x: x[0])
+                    _, yaw_i, _ = any_candidates[0]
+                    yaw_mc = corners[yaw_i][0]
+                    # 수평 기울기: 하단 오른쪽(2) - 하단 왼쪽(3) y좌표 차이
+                    self._horizontal_error      = float(yaw_mc[2][1] - yaw_mc[3][1])
+                    self._any_marker_found      = True
+                    self._any_marker_found_time = now  # ID 무관 신선도 갱신
+
+                # ── ② 크랩 워킹 / 거리 정렬용: target_id 마커만 사용 ──
+                target_candidates = []
+                for i, m_id in enumerate(flat_ids):
                     if m_id == self._current_target_id:
                         marker_cx = int(np.mean(corners[i][0][:, 0]))
-                        candidates.append((abs(marker_cx - center_x), i, marker_cx))
+                        target_candidates.append((abs(marker_cx - center_x), i, marker_cx))
 
-                if candidates:
-                    candidates.sort(key=lambda x: x[0])
-                    _, best_i, best_cx = candidates[0]
-
+                if target_candidates:
+                    target_candidates.sort(key=lambda x: x[0])
+                    _, best_i, best_cx = target_candidates[0]
                     mc = corners[best_i][0]
-                    self._marker_top_y     = np.min(mc[:, 1])
-                    self._error_px         = best_cx - center_x
-                    # 수평 기울기: 하단 오른쪽(2) - 하단 왼쪽(3) y좌표 차이
-                    # 0에 가까울수록 마커와 정면으로 정렬된 상태
-                    self._horizontal_error = float(mc[2][1] - mc[3][1])
-                    self._marker_found     = True
-                    self._last_found_time  = now  # [수정 1] 감지 성공 시에만 갱신
+                    self._marker_top_y    = np.min(mc[:, 1])
+                    self._error_px        = best_cx - center_x
+                    self._marker_found    = True
+                    self._last_found_time = now  # [수정 1] 감지 성공 시에만 갱신
                     return
 
-            # 감지 실패: found만 False, last_found_time은 건드리지 않음 [수정 1]
-            self._marker_found = False
+                # target_id 마커는 없지만 다른 마커는 있는 경우
+                # → yaw 정렬용 horizontal_error는 갱신됐으나 found는 False
+                self._marker_found = False
+                return
+
+            # 마커 전혀 없음: 두 플래그 모두 False
+            self._marker_found     = False
+            self._any_marker_found = False
 
         except Exception as e:
             self.get_logger().error(f"Image callback error: {e}")
@@ -223,21 +244,13 @@ class IntegratedForkliftNode(Node):
     # 유틸리티
     # ──────────────────────────────────────────────
     def _stop(self) -> None:
-        """
-        정지 + 관성 안정화.
-        [수정 4] 정지 명령을 0.3초간 반복 전송 — 랙으로 인한 1회 전송 유실 방지.
-        """
-        stop_twist = Twist()  # 전부 0
+        stop_twist = Twist()
         deadline = time.time() + 0.3
         while time.time() < deadline:
             self._pub_vel.publish(stop_twist)
             time.sleep(0.02)
 
     def _wait_fresh(self, timeout: float = 5.0):
-        """
-        신선한 error_px 값이 올 때까지 블로킹.
-        FRESH_THRESHOLD(0.15초) 이내 프레임만 신뢰 — 밀림 방지 핵심.
-        """
         start_wait = time.time()
         while (time.time() - start_wait) < timeout:
             if self._marker_found and \
@@ -247,12 +260,6 @@ class IntegratedForkliftNode(Node):
         return None
 
     def _timed_move(self, linear: float, angular: float, duration: float) -> None:
-        """
-        [수정 3] 실제 경과 시간 기준 종료 + min(0.02, remaining) 슬립.
-        - 루프 카운트 누적 오차 제거
-        - 종료 직전 오버슈트 방지
-        - 정지 명령 반복 전송(_stop)으로 확실한 정지
-        """
         twist = Twist()
         twist.linear.x  = float(linear)
         twist.angular.z = float(angular)
@@ -262,10 +269,9 @@ class IntegratedForkliftNode(Node):
         while rclpy.ok() and self._is_running:
             now = time.time()
             if now >= end:
-                break                            # 실제 경과 시간 기준 종료
-
+                break
             remaining = end - now
-            sleep_t   = min(0.02, remaining)     # 남은 시간보다 더 자지 않음
+            sleep_t   = min(0.02, remaining)
             self._pub_vel.publish(twist)
             time.sleep(sleep_t)
 
@@ -283,37 +289,17 @@ class IntegratedForkliftNode(Node):
     # 섹터 탐색
     # ──────────────────────────────────────────────
     def _search_sector(self, step_label: str) -> bool:
-        """
-        마커 미감지 시 캠 시야각 한계를 보완하는 섹터 이동.
-        60cm 섹터를 -30 / +30 으로 나눈 개념.
-
-        우회전 90° → 20cm 전진(MIS_LIN_SPD, 4.0초) → 좌회전 90° 복귀
-        → ★ 5초 대기 (마커 재감지 시도)
-        → 감지됨 : True  반환 (정상 진행)
-        → 미감지 : False 반환 (미션 중단 — 진짜 마커 없음)
-
-        호출 위치: Step 0-0 수평 정렬 전, Step 1-1 수평 정렬 전
-        """
         self.get_logger().info(f"🔍 {step_label}: 마커 미감지 — 섹터 탐색 시작")
 
         t_rot = self.TURN_CONST / self.ANG_SPD
 
-        # 우회전 90°
         self._timed_move(0.0, -self.ANG_SPD, t_rot)
-        # ★ 회전 후 대기 (밀림 방지)
         time.sleep(1.0)
-
-        # 20cm 전진 (MIS_LIN_SPD 기준 4.0초)
         self._timed_move(self.MIS_LIN_SPD, 0.0, self.SECTOR_FWD_TIME)
-        # ★ 전진 후 대기 (밀림 방지)
         time.sleep(1.0)
-
-        # 좌회전 90° 복귀
         self._timed_move(0.0, self.ANG_SPD, t_rot)
-        # ★ 복귀 후 대기 (밀림 방지)
         time.sleep(1.0)
 
-        # 5초 대기하며 마커 재감지 시도
         self.get_logger().info(f"🔍 {step_label}: 섹터 이동 완료 — 마커 재감지 대기 (5초)")
         redetect_start = time.time()
         while (time.time() - redetect_start) < 5.0:
@@ -323,40 +309,42 @@ class IntegratedForkliftNode(Node):
                 return True
             time.sleep(0.1)
 
-        # 5초 후에도 미감지 → 진짜 마커 없음
         self.get_logger().error(f"❌ {step_label}: 섹터 탐색 후에도 마커 미감지 — 미션 중단")
         return False
 
     # ──────────────────────────────────────────────
     # 수평 정렬 (Yaw Alignment)
+    # ── _horizontal_error는 ID 무관, 가장 중앙 마커 기준 ──
     # ──────────────────────────────────────────────
     def _align_yaw(self, step_label: str) -> bool:
         """
         마커 하단 두 꼭짓점의 y좌표 차(horizontal_error)로 수평 정렬.
+        _horizontal_error / _any_marker_found 는 ID 무관, 중앙에 가장 가까운 마커 기준.
 
-        - 마커 유실 2초 경과 시 강제 정지 후 무한 대기
-        - [수정 2] FRESH_THRESHOLD(0.15초) 이내 프레임만 정렬에 사용
-        - 단일 저속(YAW_LIN_SPD) 고정 — 오버슈트 방지
-        - 루프 주기 0.05초
+        - 임의 마커 2초 유실 시 False 반환 → 호출부에서 섹터 탐색 처리
+        - FRESH_THRESHOLD(0.15초) 이내 프레임만 정렬에 사용
+        - 단일 저속(YAW_LIN_SPD) 고정
         - 종료 조건: abs(horizontal_error) < YAW_DEADZONE(0.8px)
         """
-        self.get_logger().info(f"🔄 {step_label}: 수평 정렬 시작")
+        self.get_logger().info(f"🔄 {step_label}: 수평 정렬 시작 (ID 무관, 중앙 마커 기준)")
+        last_seen = self._any_marker_found_time if self._any_marker_found_time > 0.0 else time.time()
 
         while rclpy.ok() and self._is_running:
 
-            # ★ 마커 유실 2초 경과 시 강제 정지 후 무한 대기 (밀림 방지)
-            if self._last_found_time > 0.0 and \
-               (time.time() - self._last_found_time > 2.0):
+            if self._any_marker_found_time > last_seen:
+                last_seen = self._any_marker_found_time
+
+            age = time.time() - last_seen
+
+            # 2초 유실 → False 반환 (호출부에서 섹터 탐색)
+            if age > 2.0:
+                self._stop()
+                self.get_logger().warn(f"⚠️ {step_label}: 마커 {age:.1f}초 미갱신 — 정렬 실패")
+                return False
+
+            # 신선도 미달 → 정지 대기
+            if age > self.FRESH_THRESHOLD:
                 self._pub_vel.publish(Twist())
-                time.sleep(0.1)
-                continue
-
-            if not self._marker_found:
-                time.sleep(0.05)
-                continue
-
-            # [수정 2] 신선도 체크: 0.15초 이내 프레임만 사용
-            if time.time() - self._last_found_time > self.FRESH_THRESHOLD:
                 time.sleep(0.05)
                 continue
 
@@ -367,7 +355,6 @@ class IntegratedForkliftNode(Node):
                 self._stop()
                 return True
 
-            # 단일 저속 고정
             twist = Twist()
             twist.angular.z = -self.YAW_LIN_SPD if err > 0 else self.YAW_LIN_SPD
             self._pub_vel.publish(twist)
@@ -376,19 +363,12 @@ class IntegratedForkliftNode(Node):
         return False
 
     # ──────────────────────────────────────────────
-    # Step 0-1 ~ 0-2: 마커 발견 및 수직 거리 정렬
+    # Step 0-1: target 마커 최초 발견 대기 (10초 타임아웃)
     # ──────────────────────────────────────────────
-    def _find_zero_point(self, target_y: int) -> bool:
-        """
-        Step 0-1: 마커 최초 발견 대기 (10초 타임아웃)
-        Step 0-2: 수직 거리 정렬 - marker_top_y → TARGET_Y ±10px (무제한)
-        [수정 2] 정렬 루프에 FRESH_THRESHOLD 신선도 체크 추가
-        """
+    def _wait_for_marker(self) -> bool:
         self.get_logger().info("🔍 Step 0-1: Waiting for Marker (10s limit)...")
-        search_start    = time.time()
-        found_initially = False
+        search_start = time.time()
 
-        # [0-1] 마커 최초 발견 대기
         while rclpy.ok() and self._is_running:
             if time.time() - search_start > 10.0:
                 self.get_logger().error("❌ Step 0-1 Fail: Marker not found in 10s.")
@@ -396,41 +376,69 @@ class IntegratedForkliftNode(Node):
 
             if self._marker_found and \
                (time.time() - self._last_found_time < self.FRESH_THRESHOLD):
-                self.get_logger().info("✅ Marker detected! Starting zeroing...")
-                found_initially = True
-                break
+                self.get_logger().info("✅ Step 0-1: Marker detected!")
+                return True
             time.sleep(0.1)
 
-        # [0-2] 수직 거리 정렬 (무제한)
-        if found_initially:
-            self.get_logger().info("🔍 Step 0-2: Zeroing (No Timeout)...")
-            while rclpy.ok() and self._is_running:
+        return False
 
-                # ★ 마커 유실 2초 경과 시 강제 정지 후 대기 (밀림 방지)
-                if time.time() - self._last_found_time > 2.0:
-                    self._pub_vel.publish(Twist())
-                    time.sleep(0.1)
-                    continue
+    # ──────────────────────────────────────────────
+    # Step 0-2: 수직 거리 정렬 (무제한)
+    # 반환값:
+    #   True  — 정렬 성공
+    #   False — 노드 종료 등 정상 중단
+    #   None  — 마커 2초 유실 → 섹터 탐색 필요
+    # ──────────────────────────────────────────────
+    def _do_zeroing(self, target_y: int):
+        self.get_logger().info(
+            f"🔍 Step 0-2: Zeroing 시작 — "
+            f"is_running={self._is_running} "
+            f"last_found={self._last_found_time:.3f}")
+        last_seen     = self._last_found_time if self._last_found_time > 0.0 else time.time()
+        last_log_time = 0.0
 
-                if not self._marker_found:
-                    time.sleep(0.05)
-                    continue
+        while rclpy.ok() and self._is_running:
 
-                # [수정 2] 신선도 체크: 0.15초 이내 프레임만 사용
-                if time.time() - self._last_found_time > self.FRESH_THRESHOLD:
-                    time.sleep(0.05)
-                    continue
+            if self._last_found_time > last_seen:
+                last_seen = self._last_found_time
 
-                diff = target_y - self._marker_top_y
-                if abs(diff) <= 10:
-                    self.get_logger().info(f"📍 Zero-point reached: {self._marker_top_y:.1f}px")
-                    self._stop()
-                    return True
+            age = time.time() - last_seen
+            now = time.time()
 
-                twist = Twist()
-                twist.linear.x = self.ZERO_LIN_SPD if diff > 0 else -self.ZERO_LIN_SPD
-                self._pub_vel.publish(twist)
+            # 0.5초마다 상태 로그
+            if now - last_log_time > 0.5:
+                self.get_logger().info(
+                    f"[0-2] marker_found={self._marker_found} "
+                    f"age={age:.2f}s "
+                    f"top_y={self._marker_top_y:.0f} "
+                    f"target_y={target_y} "
+                    f"diff={target_y - self._marker_top_y:.0f}px")
+                last_log_time = now
+
+            # 2초 미갱신 → 유실
+            if age > 2.0:
+                self._stop()
+                self.get_logger().warn(
+                    f"⚠️ Step 0-2: 마커 {age:.1f}초 미갱신 — 섹터 탐색 필요")
+                return None
+
+            # 신선도 미달 → 정지 대기
+            if age > self.FRESH_THRESHOLD:
+                self._pub_vel.publish(Twist())
                 time.sleep(0.05)
+                continue
+
+            # 신선한 프레임
+            diff = target_y - self._marker_top_y
+            if abs(diff) <= 10:
+                self.get_logger().info(f"📍 Zero-point reached: {self._marker_top_y:.1f}px")
+                self._stop()
+                return True
+
+            twist = Twist()
+            twist.linear.x = self.ZERO_LIN_SPD if diff > 0 else -self.ZERO_LIN_SPD
+            self._pub_vel.publish(twist)
+            time.sleep(0.05)
 
         return False
 
@@ -444,50 +452,110 @@ class IntegratedForkliftNode(Node):
             self.get_logger().info("⏳ 카메라 프레임 안정화 대기 (5초)...")
             time.sleep(5.0)
 
-            # ── Step 0-0: [섹터 탐색] → 수평 정렬 ──────────
-            marker_fresh_00 = self._marker_found and \
-                              self._last_found_time > 0.0 and \
-                              (time.time() - self._last_found_time < self.FRESH_THRESHOLD)
-            if not marker_fresh_00:
-                self.get_logger().info("⚠️ Step 0-0: 마커 미감지 — 섹터 탐색 진입")
-                if not self._search_sector("Step 0-0"):
-                    raise RuntimeError("Step 0-0: 섹터 탐색 실패 — 마커 없음")
-
-            # ★ 섹터 탐색(또는 마커 감지 확인) 후 → 수평 정렬 전 대기 (밀림 방지)
-            time.sleep(1.0)
+            # ── Step 0-0: 수평 정렬 (ID 무관 임의 마커 기준) ──────────────────
+            # 섹터 탐색은 전체 미션 통틀어 1회만 — 아래 두 조건 중 먼저 걸린 쪽에서 발동
+            #   ① 수평 정렬 자체 실패 (아무 마커 없음)
+            #   ② 수평 정렬 성공했지만 target ID 마커가 없음
+            self.get_logger().info("🔄 Step 0-0: 수평 정렬 시작")
+            need_sector = False
 
             if not self._align_yaw("Step 0-0"):
-                raise RuntimeError("Step 0-0: 수평 정렬 실패")
+                self.get_logger().info("⚠️ Step 0-0: 수평 정렬 실패(마커 없음) — 섹터 탐색 예약")
+                need_sector = True
+            else:
+                time.sleep(1.0)
+                target_fresh = self._marker_found and \
+                               (time.time() - self._last_found_time < self.FRESH_THRESHOLD)
+                if not target_fresh:
+                    self.get_logger().info("⚠️ Step 0-0: target 마커 미감지 — 섹터 탐색 예약")
+                    need_sector = True
 
-            # ★ 수평 정렬 후 → 마커 탐색 전 대기 (밀림 방지)
-            time.sleep(1.0)
+            if need_sector:
+                if not self._search_sector("Step 0-0"):
+                    raise RuntimeError("Step 0-0: 섹터 탐색 실패 — 마커 없음")
+                time.sleep(1.0)
+                if not self._align_yaw("Step 0-0 섹터 후 재정렬"):
+                    raise RuntimeError("Step 0-0: 섹터 탐색 후 수평 정렬 실패")
+                time.sleep(1.0)
 
-            # ── Step 0-1 ~ 0-2: 마커 발견 + 수직 거리 정렬 ──
             self.get_logger().info("🔍 Step 0-1 ~ 0-2: 마커 발견 + 수직 거리 정렬 진입")
-            if not self._find_zero_point(self.TARGET_Y):
-                raise RuntimeError("Step 0-1 ~ 0-2: 마커 발견/거리 정렬 실패")
 
-            # ★ 수직 정렬 완료 후 → Step 1 진입 전 대기 (밀림 방지)
+            # ── Step 0-1: target 마커 발견 대기 ──
+            if not self._wait_for_marker():
+                # 타임아웃 — 섹터 탐색 잔여 있으면 실행
+                if need_sector:
+                    raise RuntimeError("Step 0-1: target 마커 미발견 (섹터 탐색 소진)")
+                self.get_logger().info("⚠️ Step 0-1: target 마커 미발견 — 섹터 탐색 진입 (잔여 1회)")
+                if not self._search_sector("Step 0-1"):
+                    raise RuntimeError("Step 0-1: 섹터 탐색 실패 — 마커 없음")
+                need_sector = True
+                time.sleep(1.0)
+                if not self._align_yaw("Step 0-1 섹터 후 재정렬"):
+                    raise RuntimeError("Step 0-1: 섹터 탐색 후 수평 정렬 실패")
+                time.sleep(1.0)
+                if not self._wait_for_marker():
+                    raise RuntimeError("Step 0-1: 섹터 탐색 후에도 target 마커 미발견")
+
+            # ── Step 0-2 진입 전: 마커 신선도 재확인 ──
+            target_fresh_02 = self._marker_found and \
+                              (time.time() - self._last_found_time < self.FRESH_THRESHOLD)
+            if not target_fresh_02:
+                if need_sector:
+                    raise RuntimeError("Step 0-2 진입 전: 마커 유실 (섹터 탐색 소진)")
+                self.get_logger().info("⚠️ Step 0-2 진입 전: 마커 유실 — 섹터 탐색 진입 (잔여 1회)")
+                if not self._search_sector("Step 0-2 pre"):
+                    raise RuntimeError("Step 0-2 진입 전: 섹터 탐색 실패 — 마커 없음")
+                need_sector = True
+                time.sleep(1.0)
+                if not self._align_yaw("Step 0-2 섹터 후 재정렬"):
+                    raise RuntimeError("Step 0-2 진입 전: 섹터 탐색 후 수평 정렬 실패")
+                time.sleep(1.0)
+                if not self._wait_for_marker():
+                    raise RuntimeError("Step 0-2 진입 전: 섹터 탐색 후에도 마커 미발견")
+
+            # ── Step 0-2: 수직 거리 정렬 ──
+            self.get_logger().info("🔍 Step 0-2: 수직 거리 정렬 진입")
+            zeroing_result = self._do_zeroing(self.TARGET_Y)
+
+            if zeroing_result is None:
+                # 마커 유실 → 섹터 탐색 (미소진 시 1회)
+                if need_sector:
+                    raise RuntimeError("Step 0-2: 마커 유실 (섹터 탐색 소진)")
+                self.get_logger().info("⚠️ Step 0-2: 마커 유실 — 섹터 탐색 진입 (잔여 1회)")
+                if not self._search_sector("Step 0-2"):
+                    raise RuntimeError("Step 0-2: 섹터 탐색 실패 — 마커 없음")
+                need_sector = True
+                time.sleep(1.0)
+                if not self._align_yaw("Step 0-2 섹터 후 재정렬"):
+                    raise RuntimeError("Step 0-2: 섹터 탐색 후 수평 정렬 실패")
+                time.sleep(1.0)
+                if not self._wait_for_marker():
+                    raise RuntimeError("Step 0-2: 섹터 탐색 후 마커 미발견")
+                # 섹터 소진 — 재시도 중 유실돼도 추가 탐색 없이 중단
+                zeroing_result = self._do_zeroing(self.TARGET_Y)
+                if not zeroing_result:
+                    raise RuntimeError("Step 0-2: 섹터 탐색 후 수직 정렬 실패")
+            elif zeroing_result is False:
+                raise RuntimeError("Step 0-2: 수직 거리 정렬 실패")
+
             time.sleep(1.0)
 
-            # ── Step 1-1: [섹터 탐색] → 수평 정렬 → 크랩 워킹 1회차 ──
-            self.get_logger().info("🎯 Step 1-1: 크랩 워킹 1회차")
-
-            marker_fresh_11 = self._marker_found and \
-                              self._last_found_time > 0.0 and \
-                              (time.time() - self._last_found_time < self.FRESH_THRESHOLD)
-            if not marker_fresh_11:
-                self.get_logger().info("⚠️ Step 1-1: 마커 미감지 — 섹터 탐색 진입")
+            # ── Step 1-1: 수평 정렬 → (필요 시 섹터 탐색) → 크랩 워킹 1회차 ──
+            # Step 0-0에서 섹터 탐색을 안 했고, 여기서 수평 정렬 실패 시 섹터 탐색 1회 실행
+            self.get_logger().info("🎯 Step 1-1: 수평 정렬 후 크랩 워킹 1회차")
+            if not self._align_yaw("Step 1-1 Yaw"):
+                if need_sector:
+                    # 이미 섹터 탐색을 했음 → 즉시 중단
+                    raise RuntimeError("Step 1-1: 수평 정렬 실패 — 마커 없음 (섹터 탐색 소진)")
+                # 섹터 탐색 미사용 → 1회 실행
+                self.get_logger().info("⚠️ Step 1-1: 수평 정렬 실패 — 섹터 탐색 진입 (잔여 1회)")
                 if not self._search_sector("Step 1-1"):
                     raise RuntimeError("Step 1-1: 섹터 탐색 실패 — 마커 없음")
+                need_sector = True  # 소진 표시
+                time.sleep(1.0)
+                if not self._align_yaw("Step 1-1 섹터 후 재정렬"):
+                    raise RuntimeError("Step 1-1: 섹터 탐색 후 수평 정렬 실패")
 
-            # ★ 섹터 탐색(또는 마커 감지 확인) 후 → 수평 정렬 전 대기 (밀림 방지)
-            time.sleep(1.0)
-
-            if not self._align_yaw("Step 1-1 Yaw"):
-                raise RuntimeError("Step 1-1: 수평 정렬 실패")
-
-            # ★ 수평 정렬 후 → 크랩 워킹 판단 전 대기 (밀림 방지)
             time.sleep(1.0)
 
             err_m = self._wait_fresh(timeout=5.0)
@@ -508,18 +576,15 @@ class IntegratedForkliftNode(Node):
                 self._timed_move(self.LIN_SPD, 0.0,            t_side)
                 self._timed_move(0.0, -self.ANG_SPD * rot_dir, t_rot)
 
-                # ★ 크랩 워킹 후 대기 — 쌓인 구버퍼 flush (밀림 방지 핵심)
                 time.sleep(2.0)
             else:
                 self.get_logger().info("✅ Step 1-1: 오차 데드존 이내, 크랩 워킹 생략")
 
-            # ── Step 1-2: 수평 정렬 → 크랩 워킹 2회차 ────
             self.get_logger().info("🎯 Step 1-2: 크랩 워킹 2회차")
 
             if not self._align_yaw("Step 1-2 Yaw"):
                 raise RuntimeError("Step 1-2: 수평 정렬 실패")
 
-            # ★ 수평 정렬 후 → 크랩 워킹 판단 전 대기 (밀림 방지)
             time.sleep(1.0)
 
             err_m = self._wait_fresh(timeout=5.0)
@@ -540,21 +605,23 @@ class IntegratedForkliftNode(Node):
                 self._timed_move(self.LIN_SPD, 0.0,            t_side)
                 self._timed_move(0.0, -self.ANG_SPD * rot_dir, t_rot)
 
-                # ★ 크랩 워킹 후 대기 — 쌓인 구버퍼 flush (밀림 방지 핵심)
                 time.sleep(2.0)
             else:
                 self.get_logger().info("✅ Step 1-2: 오차 데드존 이내, 크랩 워킹 생략")
 
-            # ── Step 2: 전진 ─────────────────────────────
+            self.get_logger().info("🔄 Step 2 전: 수평 정렬")
+            if not self._align_yaw("Step 2 pre-align"):
+                raise RuntimeError("Step 2 전 수평 정렬 실패 — 마커 없음")
+
+            time.sleep(1.0)
+
             self.get_logger().info("➡️ Step 2: Forwarding...")
             self._timed_move(self.MIS_LIN_SPD, 0.0, 7.0)
 
-            # ── Step 3: 포크 UP ──────────────────────────
             self.get_logger().info("🔼 Step 3: Fork UP...")
             self._fork.fork_up()
             self._publish_fork_done("UP_DONE")
 
-            # ── Step 4: 후진 ─────────────────────────────
             self.get_logger().info("⬅️ Step 4: Backwarding...")
             self._timed_move(-self.MIS_LIN_SPD, 0.0, 8.0)
 

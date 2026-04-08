@@ -1,0 +1,61 @@
+-- =============================================
+-- fp 스키마 생성
+-- =============================================
+CREATE SCHEMA IF NOT EXISTS fp;
+
+-- =============================================
+-- tb_map_info (맵 정보)
+-- =============================================
+CREATE TABLE fp.tb_map_info (
+    map_seq       INT            NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    map_name      VARCHAR(100)   NOT NULL,
+    map_file_path VARCHAR(255)   NOT NULL,
+    use_yn        CHAR(1)        NOT NULL DEFAULT 'Y',
+    created_at    DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at    DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    active_yn     CHAR(1)        NOT NULL DEFAULT 'N'
+);
+
+-- =============================================
+-- tb_common_code (공통 코드)
+-- =============================================
+CREATE TABLE fp.tb_common_code (
+    group_code  VARCHAR(50)    NOT NULL,
+    code_id     VARCHAR(50)    NOT NULL,
+    code_name   VARCHAR(100)   NOT NULL,
+    sort_order  INT            NULL,
+    node_icon   VARCHAR(100)   NULL,
+    use_yn      CHAR(1)        NOT NULL DEFAULT 'Y',
+    created_at  DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (group_code, code_id)
+);
+
+-- =============================================
+-- tb_node_info (노드 정보)
+-- =============================================
+CREATE TABLE fp.tb_node_info (
+    node_seq     INT            NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    node_id      VARCHAR(50)    NOT NULL,
+    node_x_coord DOUBLE         NOT NULL,
+    node_y_coord DOUBLE         NOT NULL,
+    use_yn       CHAR(1)        NOT NULL DEFAULT 'N',
+    created_at   DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at   DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    map_id       INT            NOT NULL,
+    FOREIGN KEY (map_id)  REFERENCES fp.tb_map_info(map_seq),
+    FOREIGN KEY (node_id) REFERENCES fp.tb_common_code(code_id)
+);
+
+-- =============================================
+-- tb_alert_info (알림 정보)
+-- =============================================
+CREATE TABLE fp.tb_alert_info (
+    alert_seq   INT            NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    alert_type  VARCHAR(50)    NOT NULL,
+    alert_msg   VARCHAR(255)   NOT NULL,
+    check_yn    CHAR(1)        NOT NULL DEFAULT 'N',
+    del_yn      CHAR(1)        NOT NULL DEFAULT 'N',
+    created_at  DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
