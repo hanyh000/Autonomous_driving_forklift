@@ -87,7 +87,7 @@ class IntegratedForkliftNode(Node):
     ALLOWED_IDS     = {0, 1, 2}
 
     # 섹터 탐색: MIS_LIN_SPD(0.05) 기준 30cm = 6.0초
-    SECTOR_FWD_TIME = 6
+    SECTOR_FWD_TIME = 8
 
     # ── [수정 1] 신선도 기준 (초) ──
     FRESH_THRESHOLD = 0.15    # 정렬 루프에서 허용하는 최대 프레임 나이
@@ -319,24 +319,26 @@ class IntegratedForkliftNode(Node):
     def _align_yaw(self, step_label: str) -> bool:
         """
         마커 하단 두 꼭짓점의 y좌표 차(horizontal_error)로 수평 정렬.
-        _horizontal_error / _any_marker_found 는 ID 무관, 중앙에 가장 가까운 마커 기준.
+        _horizontal_error 는 ID 무관, 중앙에 가장 가까운 마커 기준.
 
-        - 임의 마커 2초 유실 시 False 반환 → 호출부에서 섹터 탐색 처리
+        - _any_marker_found_time 기준 2초 미갱신 시 False 반환 → 호출부 섹터 탐색
         - FRESH_THRESHOLD(0.15초) 이내 프레임만 정렬에 사용
         - 단일 저속(YAW_LIN_SPD) 고정
         - 종료 조건: abs(horizontal_error) < YAW_DEADZONE(0.8px)
         """
         self.get_logger().info(f"🔄 {step_label}: 수평 정렬 시작 (ID 무관, 중앙 마커 기준)")
-        last_seen = self._any_marker_found_time if self._any_marker_found_time > 0.0 else time.time()
+        # 진입 시점부터 새로 카운트 — 이전 last_found 값 오염 방지
+        last_seen = time.time()
 
         while rclpy.ok() and self._is_running:
 
+            # img_callback 갱신 시 last_seen 동기화
             if self._any_marker_found_time > last_seen:
                 last_seen = self._any_marker_found_time
 
             age = time.time() - last_seen
 
-            # 2초 유실 → False 반환 (호출부에서 섹터 탐색)
+            # 2초 미갱신 → 실패 반환 (호출부에서 섹터 탐색)
             if age > 2.0:
                 self._stop()
                 self.get_logger().warn(f"⚠️ {step_label}: 마커 {age:.1f}초 미갱신 — 정렬 실패")
