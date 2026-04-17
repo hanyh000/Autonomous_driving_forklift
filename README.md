@@ -36,7 +36,7 @@
 
 * **Software**: `ROS2 Humble`, `Python 3.10`, `Flask`, `MySQL`
 * **Algorithm**: `A* Search`, `Pure Pursuit`, `AMCL (Localization)`
-* **Hardware**: `TurtleBot3 Waffle Pi`, `Arduino`, `LiDAR LDS-01`
+* **Hardware**: `TurtleBot3 Waffle Pi`, `Arduino`, `LiDAR LDS-02`
 
 
 ---
