@@ -10,7 +10,7 @@ int lastSystemState = 0;
 bool emergencyLocked = false;
 
 unsigned long lastUpdate = 0;
-unsigned long lastButtonPress = 0;  // ★ 디바운스용
+unsigned long lastButtonPress = 0;  // 디바운스용
 bool toggle = false;
 
 void setup() {
@@ -32,7 +32,7 @@ void loop() {
   if (physicalButtonPressed == HIGH && (now - lastButtonPress > 300)) {
     lastButtonPress = now;
     if (emergencyLocked) {
-      // ★ 비상 상태에서 버튼 → 해제
+      // 비상 상태에서 버튼 → 해제
       emergencyLocked = false;
       systemState = lastSystemState;
       noTone(buzzer);
@@ -126,7 +126,7 @@ void handleSystemOutput() {
 // unsigned long lastUpdate = 0;
 // unsigned long lastSerialPrint = 0;
 // bool toggle = false;
-// int peakSound = 0; // ★ 피크값 추적용
+// int peakSound = 0; // 피크값 추적용
 
 // void setup() {
 //   Serial.begin(9600);
@@ -145,10 +145,10 @@ void handleSystemOutput() {
 //   int soundValue = analogRead(sound);
 //   bool physicalButtonPressed = digitalRead(Button);
 
-//   // ★ 피크값 갱신
+//   //  피크값 갱신
 //   if (soundValue > peakSound) peakSound = soundValue;
 
-//   // ★ 0.5초마다 피크값 포함 출력
+//   // 0.5초마다 피크값 포함 출력
 //   if (millis() - lastSerialPrint >= 500) {
 //     Serial.print("--- Sensor Data --- | Sound Current: ");
 //     Serial.print(soundValue);
@@ -158,7 +158,7 @@ void handleSystemOutput() {
 //     Serial.print(physicalButtonPressed ? "ON" : "OFF");
 //     Serial.print(" | State: ");
 //     Serial.println(systemState);
-//     peakSound = 0; // ★ 구간 리셋
+//     peakSound = 0; // 구간 리셋
 //     lastSerialPrint = millis();
 //   }
 
